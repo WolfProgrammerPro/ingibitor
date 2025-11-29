@@ -1,5 +1,5 @@
 
-let time = 300;
+let time = 3;
 
 const sharedData = localStorage.getItem('sharedData')
 let data
@@ -116,7 +116,7 @@ async function analyzeInhibitoryControlResults() {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer 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',
+                'Authorization': 'Bearer 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',
                 'Content-Type': 'application/json',
                 'HTTP-Referer': window.location.origin,
                 'X-Title': document.title
