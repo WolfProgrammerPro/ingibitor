@@ -64,7 +64,7 @@ if (sharedData) {
 Next();
 
 function Next() {
-    if (maximal < 1) {
+    if (maximal < 25) {
         maximal++;
         document.getElementById("find").innerText = maximal;
         
