@@ -1,0 +1,17 @@
+button
+{
+    width: 15%;
+    height: 15%;
+}
+
+#find{
+    position: absolute;
+    left: 80%;
+    top: 5%
+}
+
+#time{
+    position: absolute;
+    left: 80%;
+    top: 25%
+}

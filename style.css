@@ -1,0 +1,14 @@
+body{
+    background-color: rgb(14, 26, 37)
+}
+
+p{
+    color: white;
+    font-size: xx-large;
+}
+
+button{
+    background-color:  rgb(77, 175, 154);
+    color: white;
+    font-size: xx-large;
+}

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажер ингибиторного контроля</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            padding: 20px;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+        
+        .instructions p {
+            margin: 10px 0;
+        }
+        
+        .game-area {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background-color: var(--white);
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        
+        .stimulus {
+            width: 120px;
+            height: 120px;
+            position: absolute;
+            display: none;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .stimulus:hover {
+            transform: scale(1.05);
+        }
+        
+        .square {
+            background-color: var(--secondary-color);
+        }
+        
+        .circle {
+            background-color: var(--error-color);
+            border-radius: 50%;
+        }
+        
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #resetBtn {
+            background-color: var(--warning-color);
+        }
+        
+        #retryBtn {
+            background-color: var(--secondary-color);
+        }
+        
+        .settings {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .stat-box {
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            min-width: 150px;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 30px;
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .results {
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+        
+        .results-controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .level-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 20px;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+        
+        #countdown {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            display: none;
+        }
+        
+        @media (max-width: 600px) {
+            .game-area {
+                height: 250px;
+            }
+            
+            .stimulus {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-box {
+                min-width: auto;
+            }
+            
+            #countdown {
+                font-size: 36px;
+            }
+            
+            .results-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .results-controls button {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тренажер ингибиторного контроля</h1>
+        
+        <div class="instructions">
+            <p><strong>Инструкция:</strong></p>
+            <p>Когда появляется <span style="color:var(--secondary-color); font-weight:bold">синий квадрат</span> - как можно быстрее нажмите ПРОБЕЛ</p>
+            <p>Когда появляется <span style="color:var(--error-color); font-weight:bold">красный круг</span> - НЕ нажимайте никакую кнопку</p>
+            <p>Текущий уровень: <span id="currentLevel">Новичок</span><span class="level-indicator" id="levelIndicator">1</span></p>
+        </div>
+        
+        <div class="settings">
+            <div class="setting-group">
+                <label for="difficulty">Сложность:</label>
+                <select id="difficulty">
+                    <option value="1">Новичок</option>
+                    <option value="2">Средний</option>
+                    <option value="3">Эксперт</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <input type="checkbox" id="soundEnabled" checked>
+                <label for="soundEnabled">Звук</label>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <div class="stimulus square" id="square"></div>
+            <div class="stimulus circle" id="circle"></div>
+            <div id="countdown">3</div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="controls">
+            <button id="startBtn">Начать игру</button>
+            <button id="resetBtn" disabled>Сбросить</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <p>Правильные реакции</p>
+                <div class="stat-value" id="correctCount">0</div>
+            </div>
+            <div class="stat-box">
+                <p>Ошибки</p>
+                <div class="stat-value" id="errorCount">0</div>
+            </div>
+            <div class="stat-box">
+                <p>Среднее время</p>
+                <div class="stat-value" id="avgTime">0 мс</div>
+            </div>
+            <div class="stat-box">
+                <p>Точность</p>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <h2>Результаты игры</h2>
+            <div class="stats">
+                <div class="stat-box">
+                    <p>Всего попыток</p>
+                    <div class="stat-value" id="totalAttempts">0</div>
+                </div>
+                <div class="stat-box">
+                    <p>Лучшее время</p>
+                    <div class="stat-value" id="bestTime">0 мс</div>
+                </div>
+                <div class="stat-box">
+                    <p>Уровень точности</p>
+                    <div class="stat-value" id="accuracyLevel">-</div>
+                </div>
+            </div>
+            <div class="results-controls">
+                <button id="restartBtn">Играть снова</button>
+                <button id="retryBtn">Перепройти тест</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const square = document.getElementById('square');
+        const circle = document.getElementById('circle');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const feedback = document.getElementById('feedback');
+        const correctCountEl = document.getElementById('correctCount');
+        const errorCountEl = document.getElementById('errorCount');
+        const avgTimeEl = document.getElementById('avgTime');
+        const accuracyEl = document.getElementById('accuracy');
+        const progressBar = document.getElementById('progressBar');
+        const countdownEl = document.getElementById('countdown');
+        const difficultySelect = document.getElementById('difficulty');
+        const soundEnabled = document.getElementById('soundEnabled');
+        const resultsEl = document.getElementById('results');
+        const totalAttemptsEl = document.getElementById('totalAttempts');
+        const bestTimeEl = document.getElementById('bestTime');
+        const accuracyLevelEl = document.getElementById('accuracyLevel');
+        const currentLevelEl = document.getElementById('currentLevel');
+        const levelIndicatorEl = document.getElementById('levelIndicator');
+        
+        // Переменные игры
+        let gameActive = false;
+        let currentStimulus = null;
+        let stimulusStartTime = 0;
+        let correctCount = 0;
+        let errorCount = 0;
+        let reactionTimes = [];
+        let progressInterval;
+        let difficulty = 1;
+        let bestTime = localStorage.getItem('bestTime') || 0;
+        let totalAttempts = localStorage.getItem('totalAttempts') || 0;
+        
+        // Таймеры для очистки
+        let stimulusTimeout = null;
+        let nextStimulusTimeout = null;
+        let countdownInterval = null;
+        
+        // Настройки игры по уровням сложности
+        const difficultySettings = {
+            1: { // Новичок
+                stimulusDuration: 2000,
+                intervalMin: 1500,
+                intervalMax: 3000,
+                goProbability: 0.7
+            },
+            2: { // Средний
+                stimulusDuration: 1500,
+                intervalMin: 1000,
+                intervalMax: 2500,
+                goProbability: 0.6
+            },
+            3: { // Эксперт
+                stimulusDuration: 1000,
+                intervalMin: 500,
+                intervalMax: 2000,
+                goProbability: 0.5
+            }
+        };
+        
+        // Звуковые эффекты
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(frequency, duration, type = 'sine') {
+            if (!soundEnabled.checked) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        // Инициализация
+        function init() {
+            bestTimeEl.textContent = bestTime > 0 ? `${bestTime} мс` : '0 мс';
+            totalAttemptsEl.textContent = totalAttempts;
+            
+            difficultySelect.addEventListener('change', function() {
+                difficulty = parseInt(this.value);
+                updateDifficultyDisplay();
+            });
+            
+            updateDifficultyDisplay();
+        }
+        
+        function updateDifficultyDisplay() {
+            const levelNames = ['', 'Новичок', 'Средний', 'Эксперт'];
+            currentLevelEl.textContent = levelNames[difficulty];
+            levelIndicatorEl.textContent = difficulty;
+        }
+        
+        // Обработчик нажатия пробела
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && gameActive) {
+                event.preventDefault(); // Предотвращаем прокрутку страницы
+                
+                if (currentStimulus === 'square') {
+                    // Правильная реакция на Go-стимул
+                    const reactionTime = Date.now() - stimulusStartTime;
+                    reactionTimes.push(reactionTime);
+                    correctCount++;
+                    correctCountEl.textContent = correctCount;
+                    feedback.textContent = `Правильно! Время реакции: ${reactionTime} мс`;
+                    feedback.style.color = 'var(--primary-color)';
+                    feedback.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                    playSound(800, 0.1);
+                    hideStimulus();
+                    
+                    // Обновляем лучшее время
+                    if (reactionTime < bestTime || bestTime === 0) {
+                        bestTime = reactionTime;
+                        bestTimeEl.textContent = `${bestTime} мс`;
+                        localStorage.setItem('bestTime', bestTime);
+                    }
+                } else if (currentStimulus === 'circle') {
+                    // Ошибка - реакция на No-Go стимул
+                    errorCount++;
+                    errorCountEl.textContent = errorCount;
+                    feedback.textContent = 'Ошибка! Не нужно было нажимать';
+                    feedback.style.color = 'var(--error-color)';
+                    feedback.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                    playSound(200, 0.3, 'square');
+                    hideStimulus();
+                }
+                updateAccuracy();
+            }
+        });
+        
+        // Функция показа стимула
+        function showStimulus() {
+            if (!gameActive) return;
+            
+            // Скрываем предыдущий стимул
+            hideStimulus();
+            
+            // Определяем тип следующего стимула
+            const settings = difficultySettings[difficulty];
+            const isGoStimulus = Math.random() < settings.goProbability;
+            currentStimulus = isGoStimulus ? 'square' : 'circle';
+            
+            // Показываем соответствующий стимул
+            const stimulus = document.getElementById(currentStimulus);
+            stimulus.style.display = 'block';
+            stimulusStartTime = Date.now();
+            
+            // Запускаем прогресс-бар
+            startProgressBar(settings.stimulusDuration);
+            
+            // Очищаем предыдущий таймер, если он существует
+            if (stimulusTimeout) {
+                clearTimeout(stimulusTimeout);
+            }
+            
+            // Автоматически скрываем стимул через заданное время
+            stimulusTimeout = setTimeout(() => {
+                if (currentStimulus) {
+                    // Если стимул все еще активен (не было реакции)
+                    if (currentStimulus === 'square') {
+                        // Пропущенный Go-стимул
+                        errorCount++;
+                        errorCountEl.textContent = errorCount;
+                        feedback.textContent = 'Ошибка! Нужно было нажать пробел';
+                        feedback.style.color = 'var(--error-color)';
+                        feedback.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                        playSound(200, 0.3, 'square');
+                    } else {
+                        // Правильное сдерживание для No-Go стимула
+                        correctCount++;
+                        correctCountEl.textContent = correctCount;
+                        feedback.textContent = 'Правильно! Вы сдержали реакцию';
+                        feedback.style.color = 'var(--primary-color)';
+                        feedback.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                        playSound(600, 0.1);
+                    }
+                    hideStimulus();
+                    updateAccuracy();
+                }
+            }, settings.stimulusDuration);
+        }
+        
+        // Функция запуска прогресс-бара
+        function startProgressBar(duration) {
+            progressBar.style.width = '100%';
+            progressBar.style.transition = `width ${duration}ms linear`;
+            
+            // Сбрасываем переход, чтобы он начался заново
+            setTimeout(() => {
+                progressBar.style.width = '0%';
+                progressBar.style.transition = 'none';
+            }, 10);
+        }
+        
+        // Функция скрытия стимула
+        function hideStimulus() {
+            square.style.display = 'none';
+            circle.style.display = 'none';
+            currentStimulus = null;
+            
+            // Останавливаем прогресс-бар
+            progressBar.style.width = '0%';
+            progressBar.style.transition = 'none';
+            
+            // Очищаем таймер стимула
+            if (stimulusTimeout) {
+                clearTimeout(stimulusTimeout);
+                stimulusTimeout = null;
+            }
+            
+            // Очищаем предыдущий таймер следующего стимула
+            if (nextStimulusTimeout) {
+                clearTimeout(nextStimulusTimeout);
+            }
+            
+            // Запускаем следующий стимул через случайный интервал
+            if (gameActive) {
+                const settings = difficultySettings[difficulty];
+                const nextInterval = Math.random() * (settings.intervalMax - settings.intervalMin) + settings.intervalMin;
+                nextStimulusTimeout = setTimeout(showStimulus, nextInterval);
+            }
+        }
+        
+        // Функция обновления точности
+        function updateAccuracy() {
+            const total = correctCount + errorCount;
+            if (total > 0) {
+                const accuracy = (correctCount / total) * 100;
+                accuracyEl.textContent = `${Math.round(accuracy)}%`;
+                
+                // Обновляем уровень точности в результатах
+                let accuracyLevel = '-';
+                if (accuracy >= 90) accuracyLevel = 'Отлично';
+                else if (accuracy >= 80) accuracyLevel = 'Хорошо';
+                else if (accuracy >= 70) accuracyLevel = 'Удовлетворительно';
+                else accuracyLevel = 'Нужно тренироваться';
+                accuracyLevelEl.textContent = accuracyLevel;
+            } else {
+                accuracyEl.textContent = '0%';
+            }
+            
+            // Обновляем среднее время
+            if (reactionTimes.length > 0) {
+                const avgTime = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
+                avgTimeEl.textContent = `${Math.round(avgTime)} мс`;
+            }
+        }
+        
+        // Функция очистки всех таймеров
+        function clearAllTimeouts() {
+            if (stimulusTimeout) {
+                clearTimeout(stimulusTimeout);
+                stimulusTimeout = null;
+            }
+            if (nextStimulusTimeout) {
+                clearTimeout(nextStimulusTimeout);
+                nextStimulusTimeout = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+        
+        // Функция начала игры
+        function startGame() {
+            // Очищаем все таймеры перед началом новой игры
+            clearAllTimeouts();
+            
+            gameActive = true;
+            startBtn.disabled = true;
+            resetBtn.disabled = false;
+            difficultySelect.disabled = true;
+            correctCount = 0;
+            errorCount = 0;
+            reactionTimes = [];
+            correctCountEl.textContent = '0';
+            errorCountEl.textContent = '0';
+            avgTimeEl.textContent = '0 мс';
+            accuracyEl.textContent = '0%';
+            feedback.textContent = 'Приготовьтесь...';
+            feedback.style.color = 'var(--text-color)';
+            feedback.style.backgroundColor = 'transparent';
+            resultsEl.style.display = 'none';
+            
+            // Запускаем обратный отсчет
+            let countdown = 3;
+            countdownEl.style.display = 'block';
+            countdownEl.textContent = countdown;
+            
+            countdownInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    countdownEl.textContent = countdown;
+                    playSound(500, 0.1);
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    countdownEl.style.display = 'none';
+                    feedback.textContent = '';
+                    // Запускаем первый стимул
+                    showStimulus();
+                }
+            }, 1000);
+        }
+        
+        // Функция сброса игры
+        function resetGame() {
+            gameActive = false;
+            startBtn.disabled = false;
+            resetBtn.disabled = true;
+            difficultySelect.disabled = false;
+            
+            // Очищаем все таймеры
+            clearAllTimeouts();
+            
+            hideStimulus();
+            feedback.textContent = 'Игра остановлена';
+            feedback.style.color = 'var(--text-color)';
+            feedback.style.backgroundColor = 'transparent';
+            countdownEl.style.display = 'none';
+            
+            // Показываем результаты
+            showResults();
+        }
+        
+        // Функция показа результатов
+        function showResults() {
+            totalAttempts++;
+            totalAttemptsEl.textContent = totalAttempts;
+            localStorage.setItem('totalAttempts', totalAttempts);
+            
+            resultsEl.style.display = 'block';
+        }
+        
+        // Функция перезапуска теста
+        function retryTest() {
+            window.location.href = 'index.html';
+        }
+        
+        // Назначаем обработчики кнопок
+        startBtn.addEventListener('click', startGame);
+        resetBtn.addEventListener('click', resetGame);
+        restartBtn.addEventListener('click', startGame);
+        retryBtn.addEventListener('click', retryTest);
+        
+        // Инициализация при загрузке
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
