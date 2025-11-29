@@ -116,7 +116,7 @@ async function analyzeInhibitoryControlResults() {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer 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',
+                'Authorization': 'Bearer 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',
                 'Content-Type': 'application/json',
                 'HTTP-Referer': window.location.origin,
                 'X-Title': document.title
@@ -158,4 +158,5 @@ async function analyzeInhibitoryControlResults() {
         console.error('Ошибка при запросе к API:', error);
     }
 }
+
 
